@@ -33,11 +33,11 @@ list_all_versions() {
 }
 
 download_release() {
-	local version filename url
+	local version filename url arch plat
 	version="$1"
 	filename="$2"
-	local arch="$(get_arch)"
-	local plat="$(get_platform)"
+	arch="$(get_arch)"
+	plat="$(get_platform)"
 
 	url="$GH_REPO/releases/download/${TOOL_NAME}@${version}/${TOOL_NAME}-${version}-${arch}-${plat}.tar.gz"
 
@@ -48,12 +48,12 @@ download_release() {
 get_arch() {
 	arch=$(uname -m | tr '[:upper:]' '[:lower:]')
 	case $arch in
-		arm64)
+	arm64)
 		arch='aarch64'
 		;;
 	esac
 
-	echo $arch
+	echo "$arch"
 }
 
 get_platform() {
@@ -68,7 +68,7 @@ get_platform() {
 		;;
 	esac
 
-	echo $plat
+	echo "$plat"
 }
 
 install_version() {
