@@ -2,9 +2,8 @@
 
 set -euo pipefail
 
-# TODO: Ensure this is the correct GitHub homepage where releases can be downloaded for tectonic-typesetting.
 GH_REPO="https://github.com/tectonic-typesetting/tectonic"
-TOOL_NAME="tectonic-typesetting"
+TOOL_NAME="tectonic"
 TOOL_TEST="tectonic --help"
 
 fail() {
@@ -31,8 +30,6 @@ list_github_tags() {
 }
 
 list_all_versions() {
-	# TODO: Adapt this. By default we simply list the tag names from GitHub releases.
-	# Change this function if tectonic-typesetting has other means of determining installable versions.
 	list_github_tags
 }
 
@@ -40,12 +37,39 @@ download_release() {
 	local version filename url
 	version="$1"
 	filename="$2"
+	local arch="$(get_arch)"
+	local plat="$(get_platform)"
 
-	# TODO: Adapt the release URL convention for tectonic-typesetting
-	url="$GH_REPO/archive/v${version}.tar.gz"
+	url="$GH_REPO/releases/download/${TOOL_NAME}@${version}/${TOOL_NAME}-${version}-${arch}-${plat}.tar.gz"
 
 	echo "* Downloading $TOOL_NAME release $version..."
 	curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
+}
+
+get_arch() {
+	arch=$(uname -m | tr '[:upper:]' '[:lower:]')
+	case $arch in
+		arm64)
+		arch='aarch64'
+		;;
+	esac
+
+	echo $arch
+}
+
+get_platform() {
+	plat=$(uname | tr '[:upper:]' '[:lower:]')
+
+	case $plat in
+	darwin)
+		plat='apple-darwin'
+		;;
+	linux)
+		plat='unknown-linux-gnu'
+		;;
+	esac
+
+	echo $plat
 }
 
 install_version() {
@@ -61,7 +85,6 @@ install_version() {
 		mkdir -p "$install_path"
 		cp -r "$ASDF_DOWNLOAD_PATH"/* "$install_path"
 
-		# TODO: Assert tectonic-typesetting executable exists.
 		local tool_cmd
 		tool_cmd="$(echo "$TOOL_TEST" | cut -d' ' -f1)"
 		test -x "$install_path/$tool_cmd" || fail "Expected $install_path/$tool_cmd to be executable."
